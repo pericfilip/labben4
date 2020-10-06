@@ -16,7 +16,7 @@ public class TollFeeCalculator {
             String[] dateStrings = sc.nextLine().split(", ");
             List<LocalDateTime> localDateTimes = new ArrayList<>(); //Skapar en lista istället för array för att kunna anväda mig av en annan storts forloop för enklare error hantering
             for(String date : dateStrings){//för varje string i dateStrings så kör den loopen och lägger till den i listan
-                 try{
+                try{
                     localDateTimes.add(LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));//lägger till i listan
                 }catch (Exception e){
                     continue;//om error hoppar den över elementet kan vara om där råkat tillkomma en en bokstav
@@ -72,7 +72,7 @@ public class TollFeeCalculator {
     }
 
     public static void main(String[] args) {
-        new TollFeeCalculator("testData/Lab4.txt");
+        new TollFeeCalculator("Laboration 4/testData/Lab4.txt");
 
     }
 }

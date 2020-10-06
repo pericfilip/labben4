@@ -114,7 +114,7 @@ public class TollFeeCalculatorTest {
     @DisplayName("Testing parsing errors")
     private void checkParsing() {
         assertThrows(DateTimeParseException.class, () ->{
-            new TollFeeCalculator("testData/Lab4medFel.txt");
+            new TollFeeCalculator("testData/Lab4.txt");
         });
     }
 }
