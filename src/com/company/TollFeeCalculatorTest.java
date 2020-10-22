@@ -15,7 +15,6 @@ import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 
 @DisplayName("Testing the program")
