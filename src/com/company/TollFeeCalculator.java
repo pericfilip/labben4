@@ -1,11 +1,13 @@
 package com.company;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class TollFeeCalculator {
@@ -14,40 +16,50 @@ public class TollFeeCalculator {
         try {
             Scanner sc = new Scanner(new File(inputFile));
             String[] dateStrings = sc.nextLine().split(", ");
-            List<LocalDateTime> localDateTimes = new ArrayList<>(); //Skapar en lista istället för array för att kunna anväda mig av en annan storts forloop för enklare error hantering
-            for(String date : dateStrings){//för varje string i dateStrings så kör den loopen och lägger till den i listan
-                try{
-                    localDateTimes.add(LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));//lägger till i listan
-                }catch (Exception e){
-                    continue;//om error hoppar den över elementet kan vara om där råkat tillkomma en en bokstav
-                }
+            LocalDateTime[] dates = new LocalDateTime[dateStrings.length];
+            for(int i = 0; i < dates.length; i++) {
+                dates[i] = LocalDateTime.parse(dateStrings[i], DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
             }
-            LocalDateTime[] dates;// Skapar en to array av typen LocalDateTime
-            dates = localDateTimes.toArray(new LocalDateTime[localDateTimes.size()]); //konverterat listan till en array
-            System.out.println("The total fee for the inputfile is: " + getTotalFeeCost(dates));  // fattades ": ", dvs mellanrum, bugg?
-            sc.close(); // Skannern stängdes aldrig
-        } catch(FileNotFoundException e) { //Tar bort IO för att få fram alla möjliga exceptions istället, då slipper man använda fler catch!
+            System.out.println("The total fee for the inputfile is" + getTotalFeeCost(dates));
+        }  catch(IOException e) {
             System.err.println("Could not read file " + inputFile);
-            System.out.println(e.getMessage());
+        }  catch (NoSuchElementException e){
+            System.err.println("File was empty");
+        }  catch (ArrayIndexOutOfBoundsException e){
+            System.err.println("Amout of values was not correct");
+        } catch (DateTimeParseException e){
+            System.err.println("test");
         }
-
-
     }
 
     public static int getTotalFeeCost(LocalDateTime[] dates) {
         int totalFee = 0;
         LocalDateTime intervalStart = dates[0];
+        int day = intervalStart.getDayOfMonth();
         for(LocalDateTime date: dates) {
-            System.out.println(date.toString());
-            long diffInMinutes = intervalStart.until(date, ChronoUnit.MINUTES);
-            if(totalFee == 0 || diffInMinutes > 60) { //totalFee == 0 då det inget startvärde finns
-                totalFee += getTollFeePerPassing(date);
-            } else if(getTollFeePerPassing(intervalStart) < getTollFeePerPassing(date)){ //om för lite betalas, else if statement
-                totalFee += getTollFeePerPassing(date) - getTollFeePerPassing(intervalStart); //nuvarande minus start för mellanskillnad
+            if(date.getDayOfMonth() == day) {
+                System.out.println(date.toString());
+                if (date.getHour() >= 6 && intervalStart.getHour() < 6) {
+                    intervalStart = date;
+                }
+                long diffInMinutes = intervalStart.until(date, ChronoUnit.MINUTES);
+                if (diffInMinutes >= 60) {
+                    totalFee += getTollFeePerPassing(date);
+                    intervalStart = date;
+                } else if (diffInMinutes <= -60) {
+                    totalFee += getTollFeePerPassing(date);
+                } else {
+                    if (date.equals(intervalStart)) {
+                        totalFee += getTollFeePerPassing(date);
+                    } else {
+                        if (getTollFeePerPassing(date) > getTollFeePerPassing(intervalStart)) {
+                            totalFee += (getTollFeePerPassing(date) - getTollFeePerPassing(intervalStart));
+                        }
+                    }
+                }
             }
-            intervalStart = date; // fanns tidigare i if satsen. intervallet börjar på givet datum oavsett?
         }
-        return Math.min(totalFee, 60); // math.min ska det vara då om priset överstiger 60 så skrivs 60 ut. annars totalFee
+        return Math.min(totalFee, 60);
     }
 
     public static int getTollFeePerPassing(LocalDateTime date) {
@@ -58,7 +70,7 @@ public class TollFeeCalculator {
         if (hour == 6 && minute <= 29) return 8;
         else if (hour == 6) return 13;
         else if (hour == 7) return 18;
-        else if (hour == 8 && minute <= 29) return 13; // jag räknar hela tidtabelle som en bugg då en hel del ändrig krävdes
+        else if (hour == 8 && minute <= 29) return 13;
         else if (hour >= 8 && hour < 15) return 8;
         else if (hour == 15 && minute <= 29) return 13;
         else if (hour == 15 || hour == 16) return 18;
@@ -72,8 +84,9 @@ public class TollFeeCalculator {
     }
 
     public static void main(String[] args) {
-        new TollFeeCalculator("Laboration 4/testData/Lab4.txt");
-
+        new TollFeeCalculator("testData/Lab4.txt");
     }
+
 }
+
 
